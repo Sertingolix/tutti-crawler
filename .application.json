@@ -1,0 +1,10 @@
+{
+    "DeploymentMethod": "lambda",
+    "Functions": {
+        "TuttiBot": {
+            "PhysicalId": {
+                "eu-west-1": "TuttiBot"
+            }
+        }
+    }
+}
