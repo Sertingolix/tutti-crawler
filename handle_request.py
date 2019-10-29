@@ -1,8 +1,9 @@
 from send import send_message, send_message_item, send_query_message, send_reply_message
+from crawl_tutti import crawl_tutti
 
-help = 'You can create a new alert by typing /new folwed by a keyword you want to be alerted for\n by typing /start all alerts are deleted and you can start over'
+help = 'You can create a new alert by typing /new folwed by a keyword you want to be alerted for\n by typing /start all alerts are deleted and you can start over \n to have multiple keywords which have to be contained use + to concatenate them. e.g. keyword1+keyword2'
 
-def handle_message(data, URL, table):
+def handle_message(data, table):
     print(data)
     message = str(data["message"]["text"])
     chat_id = data["message"]["chat"]["id"]
@@ -10,32 +11,35 @@ def handle_message(data, URL, table):
     #first_name = data["message"]["chat"]["first_name"]
     
     if '/start' in message:
-        handle_start(chat_id = chat_id, URL = URL, table = table)
+        handle_start(chat_id = chat_id, table = table)
         return
     if '/new' in message:
-        handle_new(message=message, message_id = message_id, chat_id = chat_id, URL = URL, table = table)
+        handle_new(message=message, message_id = message_id, chat_id = chat_id,  table = table)
         return
     if '/delete' in message:
-        handle_delete(message=message, message_id = message_id, chat_id = chat_id, URL = URL, table = table)
+        handle_delete(message=message, message_id = message_id, chat_id = chat_id, table = table)
         return
     if '/list' in message:
-        handle_list(chat_id = chat_id, URL = URL, table = table)
+        handle_list(chat_id = chat_id, table = table)
+        return
+    if '/force' in message:
+        crawl_tutti(table)
         return
     
     #reply = 'sorry I did not quite get that' + help
-    send_message('debug:\n'+message, chat_id,URL)
+    send_message('debug:\n'+message, chat_id)
     
     
     return
 
-def handle_new(message, message_id, chat_id, URL, table):
+def handle_new(message, message_id, chat_id, table):
     #remove new_alert command
     message = message.split()
     print(message)
     
     #make sure keyword submitted
     if len(message)==1:
-        send_reply_message('use \'/new keyword\' to submit a new keyword',message_id, chat_id,URL)
+        send_reply_message('use \'/new keyword\' to submit a new keyword',message_id, chat_id)
         return
     
     #everything but the command is the keyword
@@ -49,17 +53,17 @@ def handle_new(message, message_id, chat_id, URL, table):
             )
             
     msg = 'You will get an alert as soon as new products for ' + keyword + ' are available'
-    send_message(msg, chat_id,URL)        
+    send_message(msg, chat_id)        
     #send_query_message('For which keyword would you like to creat an alert?',message_id, chat_id,URL)
 
-def handle_delete(message, message_id, chat_id, URL, table):
+def handle_delete(message, message_id, chat_id, table):
     #remove delete command
     message = message.split()
     print(message)
     
     #make sure keyword submitted
     if len(message)==1:
-        send_reply_message('use \'/delete keyword\' to delete a keyword',message_id, chat_id,URL)
+        send_reply_message('use \'/delete keyword\' to delete a keyword',message_id, chat_id)
         return
     
     #everything but the command is the keyword
@@ -72,14 +76,15 @@ def handle_delete(message, message_id, chat_id, URL, table):
                 UpdateExpression='delete keywords :val',
                 ExpressionAttributeValues={':val': {keyword}}
             )
-def handle_list(chat_id, URL, table):
+            
+def handle_list(chat_id, table):
     keywords = table.get_item(Key={'id': chat_id}).get('Item').get('keywords')
     real_keawords = [keyword for keyword in keywords if 'placeholder-keyword' not in keyword]
     
     msg = 'your current keywords are: \n'+ ' '.join(real_keawords)
-    send_message(msg, chat_id,URL)
+    send_message(msg, chat_id)
     
-def handle_start(chat_id, URL, table):
+def handle_start(chat_id, table):
     #add user to known users
     table.update_item(
                 Key={'id': 0},
@@ -96,4 +101,4 @@ def handle_start(chat_id, URL, table):
         
     #send welcome message
     welcome_msg = 'Welcome to the Tutti alert Bot \n' + help
-    send_message(welcome_msg, chat_id,URL)
+    send_message(welcome_msg, chat_id)

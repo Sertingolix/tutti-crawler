@@ -29,7 +29,7 @@ def get_new_items(items, time):
     items = [item for item in items if item['epoch_time']>time]
     return items
     
-def crawl_tutti(URL, table):
+def crawl_tutti( table):
     
     item = table.get_item(Key={'id': -1})
     crawled_up_to = item.get('Item').get('epoch_time')
@@ -56,31 +56,35 @@ def crawl_tutti(URL, table):
     
     for user in users:
         keywords = table.get_item(Key={'id': user}).get('Item').get('keywords')
+        to_send = {}
         
         for keyword in keywords:
-            
+            actual_keyword  = keyword.split('+')
             for item in items:
                 #concatenate text for search
                 item_text = item['subject'] +' '+ item['body']
                 item_text = item_text.lower()
                 
-                if keyword in item_text:
+                if all(word in item_text for word in actual_keyword):
                     print('notify user about item')
-                    print(keyword)
-                    send_message_item(item, user, URL)
+                    print(actual_keyword)
+                    
+                    #get price
+                    price = item['price']
+                    price = price.replace(' ','').replace('.-','').replace('Gratis','0')
+                    
+                    item['price']=price+'Fr.'
+                    
+                    to_send[item['id']]=item
+                    
+        
+        #send items
+        print(f'found {len(to_send)} items to send')
+        for item in to_send:
+            send_message_item(to_send[item], user)
     
 
         
         
 if __name__ == "__main__":
-    import os, boto3
-    #generate Telegram API url
-    TOKEN=os.environ['TELEGRAM_TOKEN']
-    URL = "https://api.telegram.org/bot{}/".format(TOKEN)
-    
-    #get table 
-    dynamodb = boto3.resource('dynamodb', region_name='eu-west-1')
-    table = dynamodb.Table('Tutti')
-
-    print('for testing purposes')
-    crawl_tutti(URL,table)
+    pass

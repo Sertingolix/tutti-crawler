@@ -11,7 +11,7 @@ table = dynamodb.Table('Tutti')
 
 
 # The BatchWriteItem API allows us to write multiple items to a table in one request.
-if False:
+if True:
     with table.batch_writer() as batch:
         time = int(time.time()-10000)
         print(time)
@@ -35,11 +35,11 @@ if False:
         print(row) 
         batch.put_item(Item=row)
 
-table.update_item(
-                Key={'id': 229891194},
-                UpdateExpression='add keywords :val',
-                ExpressionAttributeValues={':val': {'ikea'}}
-            )
+#table.update_item(
+#                Key={'id': 229891194},
+#                UpdateExpression='add keywords :val',
+#                ExpressionAttributeValues={':val': {'deletion'}}
+#            )
 
 #check if we can retrieve item
 item = table.get_item(Key={'id': -1})

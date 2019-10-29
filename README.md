@@ -9,4 +9,15 @@ This fork includes aws lambda functions and api definitions which can be used wi
 ## Setup
 1. `lambda_function.py` is a aws lambda function for it to work a Telegram bot is required and messages need to be forwarded to this function by aws API Gateway. For the setup you can consult `https://dev.to/nqcm/-building-a-telegram-bot-with-aws-api-gateway-and-aws-lambda-27fg` a Telegram webhook should be placed to point to your aws gateway. The Telegramm bot key must be submitted to the function by a enviromental variable named `TELEGRAM_TOKEN`
 2. Creatte a dynamodb table named "Tutti" and add a first item to the table by running `dynamodb_setup.py`
-3. create a Cloudwatch event to call the function e.g. every 15 minutes. 
+3. create a Cloudwatch event to call the function e.g. every 15 minutes. Setting Webhooks
+
+So now we have a secure URL which is connected to our code living in a cloud function. Cool! We can go ahead and tell Telegram to send any future messages received by our bot to this address.
+
+Setting a webhook is as simple as typing the following in your browser and hitting enter. (Make sure to substitute the place holder text)
+
+"https://api.telegram.org/bot<your-bot-token>/setWebHook?url=<your-API-invoke-URL>"
+
+You will get a confirmation message from Telegram and from now on any messages sent to your bot will be pushed to this URL.
+Adding code to Lambda function
+
+Go ahead and try sending a message from your own Telegram account to the bot.
